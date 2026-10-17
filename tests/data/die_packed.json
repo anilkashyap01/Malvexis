@@ -1,0 +1,20 @@
+{
+    "detects": [
+        {
+            "filetype": "PE64",
+            "info": "",
+            "offset": "0",
+            "parentfilepart": "Header",
+            "size": "133070",
+            "values": [
+                {
+                    "info": "NRV,best",
+                    "name": "UPX",
+                    "string": "Packer: UPX(4.22)[NRV,best]",
+                    "type": "Packer",
+                    "version": "4.22"
+                }
+            ]
+        }
+    ]
+}

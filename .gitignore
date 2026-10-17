@@ -1,0 +1,20 @@
+# Secrets
+.env
+
+# Never commit malware samples or generated reports
+samples/*
+!samples/.gitkeep
+reports/
+cache/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.coverage
+tests/fixtures/build/

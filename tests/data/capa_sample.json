@@ -1,0 +1,235 @@
+{
+ "meta": {
+  "version": "9.4.0",
+  "flavor": "static"
+ },
+ "rules": {
+  "create or open file": {
+   "meta": {
+    "name": "create or open file",
+    "namespace": null,
+    "attack": [],
+    "mbc": [
+     {
+      "parts": [
+       "File System",
+       "Create File"
+      ],
+      "objective": "File System",
+      "behavior": "Create File",
+      "method": "",
+      "id": "C0016"
+     }
+    ]
+   }
+  },
+  "delay execution": {
+   "meta": {
+    "name": "delay execution",
+    "namespace": null,
+    "attack": [],
+    "mbc": [
+     {
+      "parts": [
+       "Anti-Behavioral Analysis",
+       "Dynamic Analysis Evasion",
+       "Delayed Execution"
+      ],
+      "objective": "Anti-Behavioral Analysis",
+      "behavior": "Dynamic Analysis Evasion",
+      "method": "Delayed Execution",
+      "id": "B0003.003"
+     }
+    ]
+   }
+  },
+  "change memory protection": {
+   "meta": {
+    "name": "change memory protection",
+    "namespace": null,
+    "attack": [],
+    "mbc": [
+     {
+      "parts": [
+       "Memory",
+       "Change Memory Protection"
+      ],
+      "objective": "Memory",
+      "behavior": "Change Memory Protection",
+      "method": "",
+      "id": "C0008"
+     }
+    ]
+   }
+  },
+  "allocate or change RWX memory": {
+   "meta": {
+    "name": "allocate or change RWX memory",
+    "namespace": "host-interaction/process/inject",
+    "attack": [],
+    "mbc": [
+     {
+      "parts": [
+       "Memory",
+       "Allocate Memory"
+      ],
+      "objective": "Memory",
+      "behavior": "Allocate Memory",
+      "method": "",
+      "id": "C0007"
+     }
+    ]
+   }
+  },
+  "allocate or change RW memory": {
+   "meta": {
+    "name": "allocate or change RW memory",
+    "namespace": null,
+    "attack": [],
+    "mbc": [
+     {
+      "parts": [
+       "Memory",
+       "Allocate Memory"
+      ],
+      "objective": "Memory",
+      "behavior": "Allocate Memory",
+      "method": "",
+      "id": "C0007"
+     }
+    ]
+   }
+  },
+  "parse PE header": {
+   "meta": {
+    "name": "parse PE header",
+    "namespace": "load-code/pe",
+    "attack": [
+     {
+      "parts": [
+       "Execution",
+       "Shared Modules"
+      ],
+      "tactic": "Execution",
+      "technique": "Shared Modules",
+      "subtechnique": "",
+      "id": "T1129"
+     }
+    ],
+    "mbc": []
+   }
+  },
+  "contain loop": {
+   "meta": {
+    "name": "contain loop",
+    "namespace": null,
+    "attack": [],
+    "mbc": []
+   }
+  },
+  "terminate process": {
+   "meta": {
+    "name": "terminate process",
+    "namespace": "host-interaction/process/terminate",
+    "attack": [],
+    "mbc": [
+     {
+      "parts": [
+       "Process",
+       "Terminate Process"
+      ],
+      "objective": "Process",
+      "behavior": "Terminate Process",
+      "method": "",
+      "id": "C0018"
+     }
+    ]
+   }
+  },
+  "write file on Windows": {
+   "meta": {
+    "name": "write file on Windows",
+    "namespace": "host-interaction/file-system/write",
+    "attack": [],
+    "mbc": [
+     {
+      "parts": [
+       "File System",
+       "Writes File"
+      ],
+      "objective": "File System",
+      "behavior": "Writes File",
+      "method": "",
+      "id": "C0052"
+     }
+    ]
+   }
+  },
+  "get hostname": {
+   "meta": {
+    "name": "get hostname",
+    "namespace": "host-interaction/os/hostname",
+    "attack": [
+     {
+      "parts": [
+       "Discovery",
+       "System Information Discovery"
+      ],
+      "tactic": "Discovery",
+      "technique": "System Information Discovery",
+      "subtechnique": "",
+      "id": "T1082"
+     }
+    ],
+    "mbc": [
+     {
+      "parts": [
+       "Discovery",
+       "System Information Discovery"
+      ],
+      "objective": "Discovery",
+      "behavior": "System Information Discovery",
+      "method": "",
+      "id": "E1082"
+     }
+    ]
+   }
+  },
+  "get thread local storage value": {
+   "meta": {
+    "name": "get thread local storage value",
+    "namespace": "host-interaction/process",
+    "attack": [],
+    "mbc": []
+   }
+  },
+  "enumerate PE sections": {
+   "meta": {
+    "name": "enumerate PE sections",
+    "namespace": "load-code/pe",
+    "attack": [],
+    "mbc": [
+     {
+      "parts": [
+       "Discovery",
+       "Code Discovery",
+       "Enumerate PE Sections"
+      ],
+      "objective": "Discovery",
+      "behavior": "Code Discovery",
+      "method": "Enumerate PE Sections",
+      "id": "B0046.001"
+     }
+    ]
+   }
+  },
+  "contain a thread local storage (.tls) section": {
+   "meta": {
+    "name": "contain a thread local storage (.tls) section",
+    "namespace": "executable/pe/section/tls",
+    "attack": [],
+    "mbc": []
+   }
+  }
+ }
+}

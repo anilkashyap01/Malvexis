@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Malvexis report - {{ r.file.name }}</title>
+<style>
+  :root { --bg:#0e1117; --card:#161b22; --line:#2a313c; --fg:#e6edf3; --muted:#8b949e; --ok:#3fb950; --warn:#d29922; --bad:#f85149; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui, sans-serif; padding:24px; }
+  main { max-width:960px; margin:0 auto; }
+  h1 { font-size:22px; margin:0 0 4px; } h2 { font-size:16px; margin:0 0 12px; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px; margin-bottom:16px; overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; }
+  code, .mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size:12px; word-break:break-all; }
+  .badge { display:inline-block; padding:3px 10px; border-radius:999px; font-weight:700; font-size:13px; }
+  .low_risk { background:rgba(63,185,80,.15); color:var(--ok); }
+  .suspicious { background:rgba(210,153,34,.15); color:var(--warn); }
+  .likely_malicious { background:rgba(248,81,73,.15); color:var(--bad); }
+  .score { font-size:34px; font-weight:800; }
+  .muted { color:var(--muted); }
+  ul { margin:6px 0; padding-left:20px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>{{ r.file.name }}</h1>
+  <div class="sub">Malvexis {{ r.tool.version }} &middot; analyzed {{ r.analyzed_at }} &middot; static analysis only, the sample was never executed</div>
+
+  <section class="card">
+    <h2>Verdict</h2>
+    <span class="score">{{ r.score.score }}</span><span class="muted">/100</span>
+    &nbsp;<span class="badge {{ r.score.verdict }}">{{ r.score.verdict | replace('_', ' ') | upper }}</span>
+    {% if r.score.reasons %}
+    <table style="margin-top:12px">
+      <tr><th>Points</th><th>Signal</th><th>Why</th></tr>
+      {% for reason in r.score.reasons if reason.points %}
+      <tr><td>{{ '%+d' | format(reason.points) }}</td><td>{{ reason.signal }}</td><td>{{ reason.detail }}</td></tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p class="muted">No risk indicators were found.</p>
+    {% endif %}
+    {% for note in r.score.notes %}<p class="muted">Note: {{ note }}</p>{% endfor %}
+  </section>
+
+  <section class="card">
+    <h2>File</h2>
+    <table>
+      <tr><th>Type</th><td>{{ r.filetype.description }}{% if r.filetype.extension_mismatch %} <span class="badge suspicious">extension mismatch</span>{% endif %}</td></tr>
+      <tr><th>Size</th><td>{{ "{:,}".format(r.file.size) }} bytes</td></tr>
+      <tr><th>MD5</th><td class="mono">{{ r.hashes.md5 }}</td></tr>
+      <tr><th>SHA-1</th><td class="mono">{{ r.hashes.sha1 }}</td></tr>
+      <tr><th>SHA-256</th><td class="mono">{{ r.hashes.sha256 }}</td></tr>
+      {% if r.hashes.imphash %}<tr><th>Imphash</th><td class="mono">{{ r.hashes.imphash }}</td></tr>{% endif %}
+      {% if r.hashes.ssdeep %}<tr><th>ssdeep</th><td class="mono">{{ r.hashes.ssdeep }}</td></tr>{% endif %}
+      <tr><th>Entropy</th><td>{{ r.entropy.overall }} ({{ r.entropy.label }}), max block {{ r.entropy.max_block }}</td></tr>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Threat intelligence</h2>
+    <table>
+      <tr><th>Source</th><th>Status</th><th>Details</th></tr>
+      {% for name, res in r.intel.items() %}
+      <tr>
+        <td>{{ name }}</td><td>{{ res.status }}</td>
+        <td>
+          {% if res.message %}{{ res.message }}<br>{% endif %}
+          {% if name == "virustotal" and res.status == "ok" %}{{ res.data.malicious }}/{{ res.data.total_engines }} engines malicious{% if res.data.threat_label %} &middot; {{ res.data.threat_label }}{% endif %}{% endif %}
+          {% if name == "malwarebazaar" and res.status == "ok" %}Signature: {{ res.data.signature or "n/a" }}{% if res.data.tags %} &middot; tags: {{ res.data.tags | join(", ") }}{% endif %}{% endif %}
+          {% if name == "hashlookup" and res.status == "ok" %}Known file{% if res.data.file_name %}: {{ res.data.file_name }}{% endif %}{% if res.data.product %} ({{ res.data.product }}){% endif %} &middot; trust {{ res.data.trust if res.data.trust is not none else "n/a" }}{% if res.data.known_malicious %} &middot; <strong>flagged malicious: {{ res.data.known_malicious }}</strong>{% endif %}{% endif %}
+          {% if name == "yara" and res.status == "ok" %}{{ res.data.rules_loaded }} rule file(s) loaded, {{ res.data.matches | length }} match(es){% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% if r.intel.yara and r.intel.yara.data.matches %}
+    <h2 style="margin-top:16px">YARA matches</h2>
+    <table>
+      <tr><th>Rule</th><th>Severity</th><th>Description</th></tr>
+      {% for m in r.intel.yara.data.matches %}<tr><td>{{ m.rule }}</td><td>{{ m.severity }}</td><td>{{ m.description }}</td></tr>{% endfor %}
+    </table>
+    {% endif %}
+  </section>
+
+  {% if r.tools %}
+  <section class="card">
+    <h2>Analysis tools</h2>
+    <table>
+      <tr><th>Tool</th><th>Status</th><th>Details</th></tr>
+      {% for name, res in r.tools.items() %}
+      <tr>
+        <td>{{ name }}</td><td>{{ res.status }}</td>
+        <td>
+          {% if res.message %}{{ res.message }}{% endif %}
+          {% if name == "die" and res.status == "ok" %}{% for d in res.data.detections %}{{ d.type }}: {{ d.string }}<br>{% else %}nothing identified{% endfor %}{% endif %}
+          {% if name == "clamav" and res.status == "ok" %}{% if res.data.infected %}<strong>INFECTED: {{ res.data.signature }}</strong>{% else %}no signature match{% endif %}{% endif %}
+          {% if name == "capa" and res.status == "ok" %}{{ res.data.capability_count }} capabilities, {{ res.data.attack | length }} ATT&amp;CK techniques (informational, not scored){% endif %}
+          {% if name == "floss" and res.status == "ok" %}{{ res.data.counts.stack }} stack, {{ res.data.counts.tight }} tight, {{ res.data.counts.decoded }} decoded strings{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% if r.tools.capa and r.tools.capa.status == "ok" %}
+      {% if r.tools.capa.data.attack %}
+      <h2 style="margin-top:16px">MITRE ATT&amp;CK (from capa)</h2>
+      <table><tr><th>ID</th><th>Tactic</th><th>Technique</th></tr>
+        {% for t in r.tools.capa.data.attack %}<tr><td>{{ t.id }}</td><td>{{ t.tactic }}</td><td>{{ t.technique }}{% if t.subtechnique %} / {{ t.subtechnique }}{% endif %}</td></tr>{% endfor %}
+      </table>
+      {% endif %}
+      <h2 style="margin-top:16px">Capabilities (from capa)</h2>
+      <table><tr><th>Capability</th><th>Namespace</th></tr>
+        {% for c in r.tools.capa.data.capabilities %}<tr><td>{{ c.name }}</td><td class="mono">{{ c.namespace or "" }}</td></tr>{% endfor %}
+      </table>
+    {% endif %}
+    {% if r.tools.floss and r.tools.floss.status == "ok" %}
+      {% for label, items in r.tools.floss.data.strings.items() if items %}
+      <h2 style="margin-top:16px">FLOSS {{ label }} strings</h2>
+      <ul>{% for s in items[:20] %}<li class="mono">{{ s }}</li>{% endfor %}</ul>
+      {% endfor %}
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if r.pe and r.pe.valid %}
+  <section class="card">
+    <h2>PE analysis</h2>
+    <table>
+      <tr><th>Machine</th><td>{{ r.pe.machine }}{% if r.pe.is_dll %} (DLL){% endif %}{% if r.pe.is_driver %} (driver){% endif %}</td></tr>
+      <tr><th>Compiled</th><td>{{ r.pe.compile_timestamp or "unknown" }}{% if r.pe.timestamp_flags %} <span class="muted">({{ r.pe.timestamp_flags | join(", ") }})</span>{% endif %}</td></tr>
+      <tr><th>Entry point</th><td class="mono">{{ r.pe.entry_point }} in {{ r.pe.entry_point_section or "?" }}</td></tr>
+      <tr><th>Imports</th><td>{{ r.pe.import_count }} functions from {{ r.pe.imports | length }} DLLs</td></tr>
+      <tr><th>Packers</th><td>{{ r.pe.packers | join(", ") or "none detected" }}</td></tr>
+      <tr><th>Overlay</th><td>{{ "{:,}".format(r.pe.overlay_size) }} bytes</td></tr>
+      <tr><th>Signature blob</th><td>{{ "present (not validated)" if r.pe.has_signature_blob else "absent" }}</td></tr>
+    </table>
+    <h2 style="margin-top:16px">Sections</h2>
+    <table>
+      <tr><th>Name</th><th>Virt size</th><th>Raw size</th><th>Entropy</th><th>Perm</th><th>Flags</th></tr>
+      {% for s in r.pe.sections %}
+      <tr><td class="mono">{{ s.name }}</td><td>{{ s.virtual_size }}</td><td>{{ s.raw_size }}</td><td>{{ s.entropy }}</td>
+          <td>{{ "R" if s.readable }}{{ "W" if s.writable }}{{ "X" if s.executable }}</td><td>{{ s.flags | join(", ") }}</td></tr>
+      {% endfor %}
+    </table>
+    {% if r.pe.suspicious_imports %}
+    <h2 style="margin-top:16px">Suspicious imports</h2>
+    <table>
+      <tr><th>API</th><th>Category</th><th>DLL</th></tr>
+      {% for i in r.pe.suspicious_imports %}<tr><td class="mono">{{ i.api }}</td><td>{{ i.category }}</td><td>{{ i.dll }}</td></tr>{% endfor %}
+    </table>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  <section class="card">
+    <h2>Strings</h2>
+    <p class="muted">{{ r.strings.ascii_count }} ASCII and {{ r.strings.unicode_count }} UTF-16 strings (min length {{ r.strings.min_length }})</p>
+    {% for label, items in r.strings.indicators.items() if items %}
+      <strong>{{ label | replace('_', ' ') }}</strong>
+      <ul>{% for item in items[:20] %}<li class="mono">{{ item }}</li>{% endfor %}</ul>
+    {% endfor %}
+  </section>
+
+  {% if r.errors %}
+  <section class="card"><h2>Errors</h2><ul>{% for e in r.errors %}<li>{{ e }}</li>{% endfor %}</ul></section>
+  {% endif %}
+</main>
+</body>
+</html>
