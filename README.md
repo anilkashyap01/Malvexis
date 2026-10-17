@@ -96,7 +96,7 @@ Every report includes a full breakdown table showing exact point additions and r
 
 ```bash
 # Clone the repository
-git clone https://github.com/<your-username>/malvexis.git
+git clone https://github.com/anilkashyap01/malvexis.git
 cd malvexis
 
 # Create and activate virtual environment
