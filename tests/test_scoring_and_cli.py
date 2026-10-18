@@ -91,3 +91,19 @@ def test_html_report_escapes_hostile_strings(make_pe):
     result["strings"]["indicators"]["urls"] = ["http://x/<script>alert(1)</script>"]
     html = render_html(result)
     assert "<script>alert(1)</script>" not in html and "&lt;script&gt;" in html
+
+
+def test_cli_no_args_prints_banner_and_author(capsys):
+    assert main([]) == 0
+    out = capsys.readouterr().out
+    assert "MALVEXIS" in out
+    assert "https://github.com/anilkashyap01" in out
+    assert "Usage:" in out
+
+
+def test_cli_scan_prints_banner(eicar_file, capsys):
+    assert main(["scan", str(eicar_file), "--offline"]) == 0
+    out = capsys.readouterr().out
+    assert "MALVEXIS" in out
+    assert "https://github.com/anilkashyap01" in out
+    assert "Verdict:" in out

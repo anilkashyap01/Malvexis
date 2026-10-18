@@ -12,13 +12,24 @@ from .pipeline import analyze_file
 from .report.html_report import write_html
 from .report.json_report import to_json, write_json
 
+AUTHOR = "https://github.com/anilkashyap01"
+
+BANNER = f"""======================================================================
+  MALVEXIS - Malware Research & Threat Intelligence Triage Engine
+  Version: {__version__} | Author: {AUTHOR}
+======================================================================"""
+
 VERDICT_LABELS = {"low_risk": "LOW RISK", "suspicious": "SUSPICIOUS", "likely_malicious": "LIKELY MALICIOUS"}
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="malvexis", description="Malvexis - malware research and threat intelligence (static analysis only)")
-    parser.add_argument("--version", action="version", version=f"malvexis {__version__}")
-    sub = parser.add_subparsers(dest="command", required=True)
+    parser = argparse.ArgumentParser(
+        prog="malvexis",
+        description=f"Malvexis v{__version__} - Malware research & threat intelligence triage (Author: {AUTHOR})",
+        epilog="Run 'malvexis scan --help' for detailed scan options.",
+    )
+    parser.add_argument("--version", action="version", version=f"malvexis {__version__} (Author: {AUTHOR})")
+    sub = parser.add_subparsers(dest="command")
 
     scan = sub.add_parser("scan", help="analyze a file, or every file in a folder")
     scan.add_argument("target", help="file or folder to analyze")
@@ -124,6 +135,9 @@ def cmd_scan(args: argparse.Namespace) -> int:
     cache = Cache(config.cache_dir, config.cache_ttl) if (config.use_cache and not args.offline) else None
 
     json_to_stdout = args.json == "-"
+    if not json_to_stdout:
+        print(BANNER)
+        print()
     results = []
     try:
         for path in files:
@@ -158,11 +172,40 @@ def cmd_scan(args: argparse.Namespace) -> int:
     return 0
 
 
+def print_help_guide() -> None:
+    print(BANNER)
+    print("""
+Usage:
+  malvexis scan <target> [options]
+
+Core Commands:
+  malvexis scan <file>                        Quick static triage (terminal summary)
+  malvexis scan <file> --html report.html     Generate interactive HTML report
+  malvexis scan <file> --json report.json     Export structured JSON analysis
+  malvexis scan <file> --offline              Local analysis only (skip VT/MalwareBazaar)
+  malvexis scan <folder> -r --out-dir out/    Batch analyze a directory recursively
+  malvexis scan <file> --clamav --capa        Run with opt-in analyzers
+
+Options:
+  --help, -h          Show detailed command-line options
+  --version           Show version and author information
+
+Run 'malvexis scan --help' to see all flags and tools.""")
+
+
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    if argv is None and len(sys.argv) <= 1:
+        print_help_guide()
+        return 0
+    if argv is not None and len(argv) == 0:
+        print_help_guide()
+        return 0
+    args = parser.parse_args(argv)
     if args.command == "scan":
         return cmd_scan(args)
-    return 2  # pragma: no cover
+    print_help_guide()
+    return 0
 
 
 if __name__ == "__main__":  # pragma: no cover

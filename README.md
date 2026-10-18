@@ -94,19 +94,25 @@ Every report includes a full breakdown table showing exact point additions and r
 
 ### Installation
 
+**Option A — One-Step Global Install (Recommended):**
+
 ```bash
-# Clone the repository
 git clone https://github.com/anilkashyap01/malvexis.git
 cd malvexis
+chmod +x install.sh && ./install.sh
+```
+*This sets up an isolated environment and links `malvexis` to `~/.local/bin` so you can immediately run `malvexis` from any terminal without needing to activate virtual environments.*
 
-# Create and activate virtual environment
+**Option B — Manual Setup:**
+
+```bash
 python3 -m venv .venv
 source .venv/bin/activate    # On Windows: .venv\Scripts\activate
-
-# Install core package with YARA support
 pip install -e ".[yara]"
+```
 
-# (Optional) Copy environment template and configure API keys
+(Optional) Copy environment template and configure API keys:
+```bash
 cp .env.example .env
 ```
 
